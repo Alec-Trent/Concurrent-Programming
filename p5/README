@@ -1,0 +1,106 @@
+1.
+The logic of the progam is as such:
+We allow our boat, cannibal and missionary threads to start,
+once this happens each cannibal and missionary has a count,
+this increases for each waiting specimine. Once the boat is 
+ready, there are enough people waiting, those waiting are able 
+to compete for a position on the boat. Three will be able 
+to board for a crossing. For a crossing to occur there must 
+be 3 cannibals, 3 missionaries, or 2 missionaries and 1 
+cannibal on the boat. Once this criteria is met the boat 
+will begin crossing, reaching the other side it signals the 
+three onboard to leave the boat, thus allowing the cycle to 
+start again for the designated number of crossings. 
+This program works because of the Monitor. I utilize a 
+monitor to control who has control of the execution,
+and who is waiting to take control creating the competition
+mentioned above. Mutual exclusion is granted to those
+operating in the monitor which allows for the interactions
+between threads controls the flow of the program. 
+
+2.
+Every boat has exactly three people, 3 cannibals, 3 missionaries, 
+or 2 missionaries and 1 cannibal. If this condition is not met, 
+the boat will wait until it is. Once its met, signals for the 
+corresponding conditions are sent, the monitor then transfers
+to the cannibal/missionary threads and they load into the boat 
+one by one then returning the monitors control to the boat. 
+
+3.
+My policy of assembling a safe boat is as such:
+If there are three cannibals waiting, load three cannibals
+If there are three missionaries waiting, load three missionaries
+Else if there is at least one cannibal and atleast two missionaries
+then I can assemble a safe boat load. Otherwise, we wait in the else
+condition for it to turn to true so that we can load safely
+two missionaries and one cannibal. There are no other safe options.
+I also found an extreme bias towards a single case so I used
+rand() to generate a random number from a small range and added
+the condition to each If statement above to make the output feel 
+more randomized and correct.
+
+4a.
+No one is able to get off the boat before a crossing completes. 
+Passangers are blocked by a waiting call in CannibalArrives()
+and MissionaryArrives() respectivley which is signaled in
+BoatDone(). This stops them from leaving the boat before the 
+crossing has completed.
+
+4b.
+No one can jump in or out of the boat because signaling to get on
+the boat is done in  BoatReady(). Only there do we turn over control
+to the cannibal and missionary threads to load. Given during the 
+crossing the boat with have control it is not possible for them to
+load additional passangers. Passangers are blocked from jumping over
+board for the reasons listed in 4a above.
+
+4c.
+In BoatReady() each signal sent allows that thread to execute and load
+up one by one. This means the thread that progressed reached another 
+block waiting on the boat to cross. I use this to differentiate the
+threads and register our passengers correctly.
+
+4d.
+No one on the boat can return and register before the current boat
+is completed becuase each person on the boat is blocked by a Wait()
+call. Once the person gets on the boat they each encounter a wait,
+in CannibalArrives() and MissionaryArrives() respectivley
+which is only signaled in BoatDone() when the crossing is completed.
+
+
+Additional Questions:
+
+5.
+Variables/structures
+crossingNumber: This represents the number of crossings that have 
+been executed up to the point in execution. Its used to compare
+to the max number of executions as a stopping condition.
+cCount: This is the number of cannibals waiting to load into the boat,
+its used as conditionals on a few different operations.
+mCount: This is the same as cCount except for missionaries.
+position: This is used to determine the position in the arrays I used
+to print the output correctly.
+makeup[3]: This array is what determines the composition of the 
+passengers.
+charac[3]: This array is used to store the correct prefix for printing
+sorted[3]: This array I use to store the cannibal values at 0 when there
+is 1 cannibal and 2 missionaries.
+
+Conditionals
+leaveBoat: this determined when the boat was full/in use/being loaded
+missionary: this determined when missionaries would be able to load 
+into the boat, correspoinding signal in BoatReady()
+cannibal: same as missionary, just for the cannibals
+safe: this ensures that 3 people are ready to board the boat,
+resolved having null values on first passes if they ocured before
+enough people arrived
+
+Safe boat loads
+The policy garuntees safe boat loads as seen in the answers written
+above in 4a-d.
+
+Deadlocks
+There will not be any deadlocks beacuase any wait has a corresponding
+signal in any of the possible waiting threads competeing for execution.
+Therefore, reguardless of who obtains the execution a wait can be signaled.
+

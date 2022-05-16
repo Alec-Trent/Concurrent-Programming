@@ -1,0 +1,72 @@
+1. 
+My program garuntees this case by the use of a single semaphore Baby. The 
+semaphore is initialized to 1, this allows it to pass the wait() at the 
+start of the ready_to_eat function. Once past the first wait I signal 
+the mom to run. In the food_ready function I use a loop to signal the 
+semaphore for each pot. This now means that m signals were given so that
+m baby eagles can proceed for a chance to eat a time.
+
+2.
+The Baby semaphore moderates the number of m eagles at a time. Considering
+that m is also equivalent to the pot count then when it reaches 0 a baby
+will not be able to proceed therefore wait until pots are made availible. If
+all pots are empty we wait from a signal from the mom to be done refilling 
+the pots. 
+
+3.
+The Baby semaphore here is greater than 1 and the thread occupies the mutex.
+The global counter pots, is used here. Instead of the if() we enter 
+the else. The else subtracts 1 from our pot count, and signals a baby. The 
+signal here means that another baby that was ready to eat can enter and 
+compete for the mutex. Allowing it to eat.
+
+4.
+When the pot count reaches zero it qualifies for an if conditional. This if()
+ensures that the baby will not be able to eat and only signal the mother
+to refill. Otherwise pots are availible starting at 1 and increase by 1. 
+Until we run out and trigger the if().
+
+5. 
+The mutex inside the ready_to_eat function takes care of this. By only 
+allowing a single thread to occupy the mutex at a time it ensures the 
+feeding pot allocation to be controlled. Again pots are given sequentially
+so I will not reassign a pot. 
+
+6.
+Again the ready_to_eat function only lets eagles ready to eat fight for 
+the mutex. The eagle in the mutex uses the counter pots which in this case
+would be 0 and then it enters the if conditional. The if() signals the 
+mother and the pots get filled. The next eagle to obtain the mutex can
+then eat and therefore only one woke the mother.
+ 
+7.
+The Baby semaphore is intitialized to 1 and the Mother to 0. The mothers
+go_to_sleep function has her wait immedietly at the start. The baby then has
+to go and find 0 pots and signal the mother.
+
+8.
+I use a semaphore Hold, which doesnt allow the baby eagle that woke mom
+to continue until after the semaphore is signaled by mom after she is done
+filling the pots. So when she is done the eagle that woke her can give up
+the mutex and another eagle takes over ready to eat.
+
+9.
+This again is thanks to the Semaphore Hold. By keeping the baby that signaled
+mom until the mother is finished it doesnt allow babies to eat either.
+
+10. 
+The semaphore Hold here again applies. Once we release the mutex the babies
+can begin eating. The mother thread loops back to the goto_sleep function
+and resumes her nap until the next signal to Mom.
+
+11.
+I created a conditional that when the mother finishes filling pots the t time
+she sets a value to 1. I pass 1 to the support file and it updates a global.
+I can then use the value as a conditional. If the 1 is active, I have access
+to an additional semaphore, Break. Break makes all baby eagles wait when they
+finish eating for the last time. Before Break can be signaled, another 
+semaphore Finish which makes sure the mother doesnt wake before all babies 
+are done eating needs to have its waits/signals matched. Based on this 
+condition I can then assume all children are done and signal Break. Once this
+is done the babies Exit and the mother prints and retires.
+
