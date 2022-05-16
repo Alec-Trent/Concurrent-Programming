@@ -1,0 +1,53 @@
+1.  The logic of your program
+	I begin by reading in the input from the supplied file. Then I gather the necessary information from the input file and parsing to then produce the correct arrays. Before creating the arrays, I create shared memory segments which will be used to store the arrays. Now after storing the arrays I am able to call one of two child processes. The first executes a qsort on the first array, and the second a merge on the other two arrays. The qsort process again attatches a shared memory segment to access the arrays and uses the arguments to find a pivot. Once teh pivot is obtained I create two more child processes to continue to sort each half of the array (recursion). Once the two processes are done I again detatch the shared memory and we return. The merge process uses shared memory to iterate over the input data and then a series of comparisons to determine its sorted location in the array. The comparisons presnent themselves from a modified binary merge sort stated in the spec. These comparisons are m+n processes that are specific to an x[] or y[] value and placed in its final location. After the two children finish, I print the returned (sorted) arrays, and detatch and remove the shared memory segments before terminating.
+
+2.  Why does your program work?
+	My program works because the shared memory allows the multiple processes to access the correct data. The execvp calls allow each process to run concurrently. Its also important to note that it can be run concurrently because none of the data relies on other data, or attempts to access the same data at the same time due to the use of waits.
+
+3.  Explain the allocation and use of each shared memory segment.
+	I used two shared memory segments. The first was allocated for the qsort array and the second for the merge. The qsort segment is created in main and accessed in qsort to correct the positions of the elements. The merge was also created in main and used to again sort the elemets in the two arrays. Each are used as a universal storage between the files to make accessing the data easier.
+
+
+4.  Are there potential race conditions (i.e., processes use and update a shared data item concurrently) in your program and in the program 
+	specification?
+	I do not belive there to be any race conditions because we do not make changes to the data at the same time, we wait for the processes to be finished. The use of wait and the choice of print placements could cause race conditions if you are careless.
+
+
+5.  How do you construct an argument list that is passed from program main to program qsort?
+	I begin by creating char arrays, after creation I then utilize sprintf() to populate the arrays. Given youre areguments are now packaged inside the arrays you can create a char * argument array. Its also important to note that the arg array needs to be null terminated to work. The argument array is then supplied to the execvp call where it will pass the arguments to qsort. Specifically, I pass in the path to my qsort.  I used Left = 0 as specified to be the initial left value. Right = k -1 due to it being the initial right argument. Finally, the shmID becuase it is required in qsort to attatch the memory segment.
+My example being:
+		 int Left = 0;
+                 int Right = k - 1;
+		 char l[11];
+                 char r[11];
+                 char id[11];
+                 sprintf(l, "%d", Left);
+                 sprintf(r, "%d", Right);
+                 sprintf(id, "%d", qShmID);
+
+                 // arg list
+                 char * arg[] = {"/home/campus19/ajtrent/cs3331/p2/qsort", l, r, id, '\0'};
+
+                 // exec the child
+                 if(execvp(arg[0], arg) == -1){
+
+
+6.  How do you construct an argument list that is passed from program main to program merge?
+	The proccess outlined above is exactly the same. Specifically, I passed both m and n values. This was so I could partition my array since i packaged it into a single shared memory segment. Prior to this I was sending n+m as p, and used it to execute p child processes. I also include the id for the shared memory containing the input data and the id for the output array.
+My example: 
+		 char mm[11];
+                 char nn[11];
+                 char p[11];
+                 char id[11];
+                 char od[11];
+                 sprintf(mm, "%d", m);
+                 sprintf(nn, "%d", n);
+                 sprintf(p, "%d", proc);
+                 sprintf(id, "%d", mShmID);
+                 sprintf(od, "%d", oShmID);
+
+                 // arg list
+                 char * arg[] = {"/home/campus19/ajtrent/cs3331/p2/merge", mm, nn, p, id, od, '\0'};
+
+                 // exec the child
+                 if(execvp(arg[0], arg) == -1){
